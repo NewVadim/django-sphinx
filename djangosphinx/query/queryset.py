@@ -291,6 +291,20 @@ class SphinxQuerySet(object):
                     pass
                 elif isinstance(f, six.integer_types) or isinstance(f, (bool, date, datetime, float, decimal.Decimal)):
                     f = to_sphinx(f)
+                elif f is None:
+                    model_filed = obj._meta.get_field(field)
+                    if isinstance(model_filed, (
+                            models.TextField, models.CharField, models.FileField,
+                            models.FilePathField, models.IPAddressField, models.GenericIPAddressField
+                    )):
+                        f = ''
+                    elif isinstance(model_filed, (
+                            models.IntegerField, models.BooleanField, models.NullBooleanField,
+                            models.DateField, models.FloatField, models.BinaryField, models.TimeField
+                    )):
+                        f = 0
+                    elif isinstance(model_filed, (models.FloatField, models.DecimalField)):
+                        f = 0.0
                 else:
                     model_filed = obj._meta.get_field(field)
                     if isinstance(model_filed, RelatedField):
