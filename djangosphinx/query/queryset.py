@@ -734,7 +734,7 @@ class SphinxQuerySet(object):
                     if exclude:
                         # not supported by sphinx. raises error!
                         warnings.warn('Exclude range not supported by SphinxQL now!')
-                        filters[field] = 'NOT %s BETWEEN %i AND %i' % (field, v[0], v[1])
+                        filters[field] = 'NOT %s BETWEEN %s AND %s' % (field, v[0], v[1])
                     else:
                         filters[field] = '%s BETWEEN %s AND %s' % (field, v[0], v[1])
 
