@@ -294,7 +294,8 @@ class SphinxQuerySet(object):
                 else:
                     model_filed = obj._meta.get_field(field)
                     if isinstance(model_filed, RelatedField):
-                        f = to_sphinx(getattr(obj, model_filed.column))
+                        value = getattr(obj, model_filed.column)
+                        f = to_sphinx(value) if value else 0
                     elif f is None:
                         if isinstance(model_filed, (
                                 models.TextField, models.CharField, models.FileField,
