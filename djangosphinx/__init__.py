@@ -36,7 +36,7 @@ from __future__ import unicode_literals
 import warnings
 import os.path
 
-__version__ = (4, 0, 22)
+__version__ = (4, 0, 2)
 
 
 def _get_git_revision(path):
