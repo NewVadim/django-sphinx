@@ -540,8 +540,9 @@ class SphinxQuerySet(object):
 
                 if ned_fields:
                     for doc_id, doc in docs.iteritems():
-                        obj_id, ct = self._decode_document_id(int(doc_id))
                         values = doc['data']['fields']
+                        obj_id, ct = self._decode_document_id(int(doc_id))
+                        values['id'] = obj_id
                         for key, value in values.iteritems():
                             if isinstance(value, long):
                                 values[key] = int(value)
