@@ -531,10 +531,24 @@ class SphinxQuerySet(object):
                     self._result_cache = []
                     return
 
-                if self.model is None and len(self._indexes) == 1 and ct is not None:
+                ned_fields = None
+                if not self._fields == '*' and self.meta['fields']:
+                    ned_fields = self.meta['fields'].keys()
+
+                elif self.model is None and len(self._indexes) == 1 and ct is not None:
                     self.model = ContentType.objects.get(pk=ct).model_class()
 
-                if self.model:
+                if ned_fields:
+                    for doc_id, doc in docs.iteritems():
+                        obj_id, ct = self._decode_document_id(int(doc_id))
+                        values = doc['data']['fields']
+                        for key, value in values.iteritems():
+                            if isinstance(value, long):
+                                values[key] = int(value)
+
+                        results[ct][values['id']]['obj'] = values
+
+                elif self.model:
                     qs = self.get_query_set(self.model)
 
                     qs = qs.filter(pk__in=results[ct].keys())
