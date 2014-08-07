@@ -107,7 +107,10 @@ class SphinxQuerySet(object):
             model_options = model.__sphinx_options__
             if model_options.get('realtime', False):
                 self.realtime = '%s_rt' % model._meta.db_table
-                self._indexes.append(self.realtime)
+                if model_options.get('only_realtime', False):
+                    self._indexes = self.realtime
+                else:
+                    self._indexes.append(self.realtime)
         else:
             self._indexes = self._parse_indexes(kwargs.pop('index', None))
 
