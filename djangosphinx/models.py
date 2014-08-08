@@ -1,7 +1,10 @@
 # coding: utf-8
 from __future__ import unicode_literals, absolute_import
+from _mysql import OperationalError, ProgrammingError
 
 import warnings
+from django.db import models
+from django.db.models.query import QuerySet
 
 from .query import SphinxQuerySet, SearchError
 
@@ -74,3 +77,48 @@ class SphinxSearch(object):
         setattr(model, '__sphinx_options__', self._options)
 
         setattr(model, name, self._sphinx)
+
+
+class RTQuerySet(QuerySet):
+    def delete(self, return_ids=False):
+        pk_list = self.values_list('pk', flat=True)
+        self.model.search.filter(id__in=list(pk_list)).delete()
+        super(RTQuerySet, self).delete()
+
+        if return_ids:
+            return pk_list
+
+
+class RTManager(models.Manager):
+    def get_queryset(self):
+        return RTQuerySet(self.model, using=self._db)
+
+
+class RTAbstractModel(models.Model):
+    class Meta:
+        abstract = True
+
+    objects = RTManager()
+
+    def save(self, *args, **kwargs):
+        self.rt_index_create_or_update()
+        super(RTAbstractModel, self).save(*args, **kwargs)
+
+    def rt_index_create_or_update(self):
+        try:
+            if self.id:
+                self.search.create(self, force_update=True)
+            else:
+                self.search.create(self)
+
+        except ProgrammingError:
+            warnings.warn(
+                "The old object, but index didn't exist, the index was created!",
+                Warning
+            )
+            self.search.create(self)
+
+    def delete(self, *args, **kwargs):
+        pk = self.pk
+        super(RTAbstractModel, self).delete(*args, **kwargs)
+        self.search.filter(id=pk).delete()
