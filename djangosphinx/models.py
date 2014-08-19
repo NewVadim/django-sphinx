@@ -101,15 +101,16 @@ class RTAbstractModel(models.Model):
     objects = RTManager()
 
     def save(self, *args, **kwargs):
-        self.rt_index_create_or_update()
+        create = False if self.id else True
         super(RTAbstractModel, self).save(*args, **kwargs)
+        self.rt_index_create_or_update(create=create)
 
-    def rt_index_create_or_update(self):
+    def rt_index_create_or_update(self, create=False):
         try:
-            if self.id:
-                self.search.create(self, force_update=True)
-            else:
+            if create:
                 self.search.create(self)
+            else:
+                self.search.create(self, force_update=True)
 
         except ProgrammingError:
             warnings.warn(
