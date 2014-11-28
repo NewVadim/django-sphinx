@@ -82,7 +82,9 @@ class SphinxSearch(object):
 class RTQuerySet(QuerySet):
     def delete(self, return_ids=False):
         pk_list = self.values_list('pk', flat=True)
-        self.model.search.filter(id__in=list(pk_list)).delete()
+        if pk_list:
+            self.model.search.filter(id__in=list(pk_list)).delete()
+
         super(RTQuerySet, self).delete()
 
         if return_ids:
