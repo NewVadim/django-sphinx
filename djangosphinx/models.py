@@ -30,6 +30,9 @@ class SphinxModelManager(object):
     def filter(self, **kwargs):
         return self._get_query_set().filter(**kwargs)
 
+    def exclude(self, **kwargs):
+        return self._get_query_set().exclude(**kwargs)
+
     def query(self, *args, **kwargs):
         return self._get_query_set().query(*args, **kwargs)
 
