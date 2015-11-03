@@ -351,13 +351,8 @@ class SphinxQuerySet(object):
         if not values:
             raise SearchError('Empty QuerySet? o_O')
 
-        query = ['REPLACE' if kwargs.pop('force_update', False) else 'INSERT']
-        query.append('INTO %s' % self.realtime)
-        query.append('(%s)' % ','.join(self._get_index_fields()))
-        query.append('VALUES')
-
-        query_args = []
         q = []
+        query_args = []
         for v in values:
             f_list = []
             for f in v:
@@ -371,10 +366,15 @@ class SphinxQuerySet(object):
 
             q.append('(%s)' % ','.join(f_list))
 
-        query.append(', '.join(q))
+        query = '{event} INTO {index} ({fields}) VALUES {values}'.format(
+            event='REPLACE' if kwargs.pop('force_update', False) else 'INSERT',
+            index=self.realtime,
+            fields=','.join(self._get_index_fields()),
+            values=', '.join(q)
+        )
 
         cursor = conn_handler.cursor()
-        count = cursor.execute(' '.join(query), query_args)
+        count = cursor.execute(query, query_args)
 
         return count
 
